@@ -1,12 +1,16 @@
-async function isAdmin(req, res, next) {
-    if (!req.user.czyAdmin) {
+async function logged(req, res, next) {
+    let User = require("../models/user");
+    let user = await User.findOne({ token: req.cookies.token });
+
+    if (!user) {
         res.send({
             sukces: false,
-            bledy: { token: "Brak wystarczajacych uprawnien" },
+            bledy: { token: "Token jest niepoprawny" },
         });
+    } else {
+        req.user = await user.populate("koszyk");
+        return next();
     }
-
-    return next();
 }
 
-module.exports = isAdmin;
+module.exports = logged;

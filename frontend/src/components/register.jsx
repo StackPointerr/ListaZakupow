@@ -1,14 +1,27 @@
 import { useState } from "react";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 
-export default function Login() {
-    const [login, setEmail] = useState("");
+function setCookie(name, value, days) {
+    var expires = "";
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "") + expires + "; path=/";
+}
+
+export function Register() {
+    const [login, setLogin] = useState("");
     const [password, setPassword] = useState("");
+    const [blad, setBlad] = useState("");
+
+    const navigate = useNavigate();
 
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        fetch("http://localhost:3000/api/login", {
+        fetch("http://localhost:3000/api/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ login, password }),
@@ -16,20 +29,24 @@ export default function Login() {
             .then((response) => response.json())
             .then((response) => {
                 console.log(response);
+                if (response.sukces) {
+                    setCookie("token", response.token, 7);
+                    navigate("/");
+                    setBlad("");
+                } else {
+                    setBlad(Object.values(response.bledy)[0]);
+                }
             });
     };
 
     return (
-        <div
-            className="d-flex flex-column flex-lg-row justify-content-evenly w-100 p-3"
-            style={{ height: "100vh" }}
-        >
+        <div className="d-flex flex-column flex-lg-row justify-content-evenly w-100 p-3" style={{ height: "100vh" }}>
             <div className="d-flex w-100 justify-content-center align-items-center">
                 <h1 className="display-2 fw-bold logo">NIGGNET</h1>
             </div>
             <div className="d-flex w-100 justify-content-center align-items-center">
                 <form className="col-12 col-lg-8" method="POST">
-                    <h1 className="text-center fs-1">Zaloguj się</h1>
+                    <h1 className="text-center fs-1">Zarejestruj się</h1>
                     <div className="form-group w-100 pb-4 pt-4">
                         <label className="fs-3" htmlFor="email">
                             Adres email
@@ -42,7 +59,7 @@ export default function Login() {
                             placeholder="Email"
                             autoComplete="email"
                             value={login}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={(e) => setLogin(e.target.value)}
                         />
                     </div>
                     <div className="form-group w-100 pb-4">
@@ -60,18 +77,13 @@ export default function Login() {
                             onChange={(e) => setPassword(e.target.value)}
                         />
                     </div>
-                    <p className="p-2 mb-2 text-center fs-5 bg-danger text-white rounded">
-                        Podaj poprawny adres email!
-                    </p>
-                    <div className="d-flex flex-row gap-3 align-items-center">
-                        <button
-                            className="btn btn-primary w-50 p-2 fs-4 mt-4"
-                            onClick={handleSubmit}
-                        >
-                            Zaloguj
+                    {blad ? <p className="p-2 mb-2 text-center fs-5 bg-danger text-white rounded">{blad}</p> : ""}
+                    <div className="d-flex flex-column flex-xxl-row gap-3 align-items-center">
+                        <button className="btn btn-primary w-100 p-2 fs-4" onClick={handleSubmit}>
+                            Zarejestruj
                         </button>
-                        <NavLink className="btn btn-primary w-50 p-2 fs-4 mt-4" to="/register">
-                            Utwórz konto
+                        <NavLink className="btn btn-primary w-100 p-2 fs-4" to="/login">
+                            Masz już konto?
                         </NavLink>
                     </div>
                 </form>
